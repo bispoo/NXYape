@@ -1,0 +1,174 @@
+# Project: NXYape
+  
+ifeq ($(strip $(DEVKITPRO)),)
+$(error "Please set DEVKITPRO in your environment. export DEVKITPRO=<path to>/devkitpro")
+endif
+  
+TOPDIR ?= $(CURDIR)
+include $(DEVKITPRO)/libnx/switch_rules
+export BUILD_EXEFS_SRC := build/exefs
+
+APP_TITLE := NXyape
+APP_DESCRIPTION := NXyape
+APP_AUTHOR := Bispoo
+APP_VERSION := 0.2
+ICON := NXyape.jpg
+
+CC        = aarch64-none-elf-gcc
+
+LINKOBJ   = 1541mem.o archdep.o Cia.o cpu.o dis.o diskfs.o dos.o drive.o FdcGcr.o iec.o interface.o keyboard.o keys64.o main.o monitor.o prg.o SaveState.o serial.o Sid.o sound.o tape.o tcbm.o tedmem.o tedsound.o vic2mem.o video.o
+
+
+LIBS      = -specs=$(DEVKITPRO)/libnx/switch.specs -g -march=armv8-a -mtune=cortex-a57 -mtp=soft -fPIE -L$(DEVKITPRO)/libnx/lib -L$(DEVKITPRO)/portlibs/switch/lib -lz -lSDL2_mixer -lvorbisfile  -lvorbis  -logg -lmodplug -lmpg123 -lSDL2  -lm  -lstdc++ -lnx
+INCS      = -I. -I$(DEVKITPRO)/portlibs/switch/include/SDL2 -I$(DEVKITPRO)/libnx/include -I$(DEVKITPRO)/portlibs/switch/include  
+CXXINCS   = -I$(DEVKITPRO)/portlibs/switch/include/SDL2 -I"src/main" -I$(DEVKITPRO)/libnx/include -I$(DEVKITPRO)/portlibs/switch/include
+BUILD	  =	build
+BIN       = NXyape.elf
+BINDIR	  = .
+CXXFLAGS  = $(CXXINCS) $(DEFINES) -fsigned-char -march=armv8-a -mtune=cortex-a57 -mtp=soft -fPIE -fomit-frame-pointer -O2 -DSWITCH
+CFLAGS    = $(INCS) $(DEFINES)    -fsigned-char -march=armv8-a -mtune=cortex-a57 -mtp=soft -fPIE -fomit-frame-pointer -O2 -DSWITCH
+GPROF     = gprof.exe
+RM        = rm -f
+LINK      = aarch64-none-elf-gcc
+CPP		  = aarch64-none-elf-g++
+OUTPUT    = NXyape
+ 
+ifeq ($(strip $(ICON)),)
+	icons := $(wildcard *.jpg)
+	ifneq (,$(findstring $(TARGET).jpg,$(icons)))
+		export APP_ICON := $(TOPDIR)/$(TARGET).jpg
+	else
+		ifneq (,$(findstring icon.jpg,$(icons)))
+			export APP_ICON := $(TOPDIR)/icon.jpg
+		endif
+	endif
+else
+	export APP_ICON := $(TOPDIR)/$(ICON)
+endif
+
+ifeq ($(strip $(NO_ICON)),)
+	export NROFLAGS += --icon=$(APP_ICON)
+endif
+
+ifeq ($(strip $(NO_NACP)),)
+	export NROFLAGS += --nacp=$(BINDIR)/$(OUTPUT).nacp
+endif
+
+ifneq ($(APP_TITLEID),)
+	export NACPFLAGS += --titleid=$(APP_TITLEID)
+endif
+
+ifneq ($(ROMFS),)
+	export NROFLAGS += --romfsdir=$(CURDIR)/$(ROMFS)
+endif
+
+
+.PHONY: all all-before all-after clean clean-custom
+all: all-before $(BIN) all-after
+
+clean: clean-custom
+	$(RM) $(LINKOBJ) $(BIN)
+
+$(BIN): $(LINKOBJ)
+	$(LINK) $(LINKOBJ) -o "NXyape.elf" $(LIBS)
+
+1541mem.o: $(GLOBALDEPS) 1541mem.cpp
+	$(CC) -c 1541mem.cpp -o 1541mem.o $(CFLAGS)
+	
+archdep.o: $(GLOBALDEPS) archdep.cpp
+	$(CC) -c archdep.cpp -o archdep.o $(CFLAGS)
+	
+Cia.o: $(GLOBALDEPS) Cia.cpp
+	$(CC) -c Cia.cpp -o Cia.o $(CFLAGS)
+
+cpu.o: $(GLOBALDEPS) cpu.cpp
+	$(CC) -c cpu.cpp -o cpu.o $(CFLAGS)
+
+dis.o: $(GLOBALDEPS) dis.cpp
+	$(CC) -c dis.cpp -o dis.o $(CFLAGS)
+
+diskfs.o: $(GLOBALDEPS) diskfs.cpp
+	$(CC) -c diskfs.cpp -o diskfs.o $(CFLAGS)
+
+dos.o: $(GLOBALDEPS) dos.cpp
+	$(CC) -c dos.cpp -o dos.o $(CFLAGS)
+
+drive.o: $(GLOBALDEPS) drive.cpp
+	$(CC) -c drive.cpp -o drive.o $(CFLAGS)
+
+FdcGcr.o: $(GLOBALDEPS) FdcGcr.cpp
+	$(CC) -c FdcGcr.cpp -o FdcGcr.o $(CFLAGS)
+
+iec.o: $(GLOBALDEPS) iec.cpp
+	$(CC) -c iec.cpp -o iec.o $(CFLAGS)
+
+interface.o: $(GLOBALDEPS) interface.cpp
+	$(CC) -c interface.cpp -o interface.o $(CFLAGS)
+
+keyboard.o: $(GLOBALDEPS) keyboard.cpp
+	$(CC) -c keyboard.cpp -o keyboard.o $(CFLAGS)
+
+keys64.o: $(GLOBALDEPS) keys64.cpp
+	$(CC) -c keys64.cpp -o keys64.o $(CFLAGS)
+	
+main.o: $(GLOBALDEPS) main.cpp
+	$(CC) -c main.cpp -o main.o $(CFLAGS)
+	
+monitor.o: $(GLOBALDEPS) monitor.cpp
+	$(CC) -c monitor.cpp -o monitor.o $(CFLAGS)
+	
+prg.o: $(GLOBALDEPS) prg.cpp
+	$(CC) -c prg.cpp -o prg.o $(CFLAGS)
+	
+SaveState.o: $(GLOBALDEPS) SaveState.cpp
+	$(CC) -c SaveState.cpp -o SaveState.o $(CFLAGS)
+
+serial.o: $(GLOBALDEPS) serial.cpp
+	$(CC) -c serial.cpp -o serial.o $(CFLAGS)
+
+Sid.o: $(GLOBALDEPS) Sid.cpp
+	$(CC) -c Sid.cpp -o Sid.o $(CFLAGS)
+
+sound.o: $(GLOBALDEPS) sound.cpp
+	$(CC) -c sound.cpp -o sound.o $(CFLAGS)
+
+tape.o: $(GLOBALDEPS) tape.cpp
+	$(CC) -c tape.cpp -o tape.o $(CFLAGS)
+
+tcbm.o: $(GLOBALDEPS) tcbm.cpp
+	$(CC) -c tcbm.cpp -o tcbm.o $(CFLAGS)
+
+tedmem.o: $(GLOBALDEPS) tedmem.cpp
+	$(CC) -c tedmem.cpp -o tedmem.o $(CFLAGS)
+
+tedsound.o: $(GLOBALDEPS) tedsound.cpp
+	$(CC) -c tedsound.cpp -o tedsound.o $(CFLAGS)
+
+vic2mem.o: $(GLOBALDEPS) vic2mem.cpp
+	$(CC) -c vic2mem.cpp -o vic2mem.o $(CFLAGS)
+
+video.o: $(GLOBALDEPS) video.cpp
+	$(CC) -c video.cpp -o video.o $(CFLAGS)
+	
+#main.o monitor.o prg.o SaveState.o serial.o Sid.o sound.o tape.o tcbm.o tedmem.o tedsound.o vic2mem.o video.o		
+#---------------------------------------------------------------------------------
+# main targets
+#---------------------------------------------------------------------------------
+all	:	$(BINDIR)/$(OUTPUT).pfs0 $(BINDIR)/$(OUTPUT).nro
+
+$(BINDIR)/$(OUTPUT).pfs0	:	$(BINDIR)/$(OUTPUT).nso
+
+$(BINDIR)/$(OUTPUT).nso	:	$(BINDIR)/$(OUTPUT).elf
+
+ifeq ($(strip $(NO_NACP)),)
+$(BINDIR)/$(OUTPUT).nro	:	$(BINDIR)/$(OUTPUT).elf $(BINDIR)/$(OUTPUT).nacp
+else
+$(BINDIR)/$(OUTPUT).nro	:	$(BINDIR)/$(OUTPUT).elf
+endif
+
+$(BINDIR)/$(OUTPUT).elf	:	$(OFILES)
+
+$(OFILES_SRC)	: $(HFILES_BIN)
+	
+# end of Makefile ...
+ 
